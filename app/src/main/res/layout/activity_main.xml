@@ -35,9 +35,20 @@
 
     </LinearLayout>
 
+    <TextView
+        android:id="@+id/TV_image_path"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/path_file"
+        android:layout_marginTop="8dp"
+        android:layout_marginLeft="8dp"
+        android:textSize="16sp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/linearLayout" />
+
     <ImageView
         android:id="@+id/imageView"
         android:layout_width="match_parent"
-        android:layout_height="680dp"
-        app:layout_constraintTop_toBottomOf="@+id/linearLayout" />
+        android:layout_height="650dp"
+        app:layout_constraintTop_toBottomOf="@+id/TV_image_path" />
 </androidx.constraintlayout.widget.ConstraintLayout>

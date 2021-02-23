@@ -9,16 +9,19 @@ import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.provider.MediaStore
+import android.util.Log
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
+import java.io.File
 
 class MainActivity : AppCompatActivity() {
 
     private lateinit var pickFromAlbum: TextView
     private lateinit var takeFromCamera: TextView
     private lateinit var showImage: ImageView
+    private lateinit var pathImage: TextView
 
     val PICK_IMAGE = 1
     val TAKE_IMAGE = 2
@@ -30,7 +33,7 @@ class MainActivity : AppCompatActivity() {
         init()
 
         pickFromAlbum.setOnClickListener{
-            val intent = Intent()
+            val intent = Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI)
             intent.setType("image/*")
             intent.setAction(Intent.ACTION_GET_CONTENT)
             startActivityForResult(Intent.createChooser(intent, "Select Image"), PICK_IMAGE)
@@ -39,12 +42,13 @@ class MainActivity : AppCompatActivity() {
         }
 
         takeFromCamera.setOnClickListener{
-
-
+            val intent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
+            startActivityForResult(Intent.createChooser(intent, "Take a photo"), TAKE_IMAGE)
         }
 
     }
 
+    @RequiresApi(Build.VERSION_CODES.O)
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
         if(resultCode != RESULT_CANCELED){
@@ -54,29 +58,21 @@ class MainActivity : AppCompatActivity() {
 
             }
             else if(requestCode == PICK_IMAGE && data != null && resultCode == RESULT_OK){
-                val selectedImage: Uri = data.data!!
-                val filePathColumn = arrayOf(MediaStore.Images.Media.DATA)
+                val selectedImage: Uri? = data.data!!
 
                 if(selectedImage != null){
-                    val cursor: Cursor? = if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
-                        contentResolver.query(selectedImage,
-                                filePathColumn,
-                                null,
-                                null)
-                    } else {
-                        TODO("VERSION.SDK_INT < O")
-                    }
+
+                    val imgBitmap: Bitmap = BitmapFactory.decodeStream(contentResolver.openInputStream(selectedImage))
+                    val file = File(selectedImage.path!!)
+
+                    val path = file.path.toString()
+                    pathImage.text = path
+                    Log.e("PATH FILE : ", path)
+
+                    Log.e("URI : ", selectedImage.toString())
+                    showImage.setImageBitmap(imgBitmap)
 
 
-
-                    if(cursor != null){
-                        cursor.moveToFirst()
-
-                        val imgIndex: String? = cursor.getString(cursor.getColumnIndex(filePathColumn[0]))
-                        showImage.setImageBitmap(BitmapFactory.decodeFile(imgIndex))
-
-                        cursor.close()
-                    }
                 }
             }
         }
@@ -88,5 +84,6 @@ class MainActivity : AppCompatActivity() {
         pickFromAlbum = findViewById(R.id.TV_pick_from_album)
         takeFromCamera = findViewById(R.id.TV_take_from_camera)
         showImage = findViewById(R.id.imageView)
+        pathImage = findViewById(R.id.TV_image_path)
     }
 }
